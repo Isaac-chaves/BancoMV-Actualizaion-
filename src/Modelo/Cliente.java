@@ -35,6 +35,7 @@ public class Cliente {
     this.correo = Objects.requireNonNull(correo, "El correo no puede ser un valor nulo");
     this.telefono = Objects.requireNonNull(telefono, "El telefono no puede ser un valor nulo");
     this.preferente = preferente;
+    
 }
 
     
