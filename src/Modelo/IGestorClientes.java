@@ -18,4 +18,6 @@ public interface IGestorClientes {
     boolean existe(String id);
     List<Cliente> listar();
     public Cliente ultimoRegistro();
+
+    public List<Cliente> getHistoricoClientes();
 }

@@ -4,7 +4,6 @@
  */
 package Modelo;
 
-import Modelo.Cliente;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +14,7 @@ import java.util.Objects;
  * @author jprod
  */
 public class GestorClientesMem implements IGestorClientes {
+    private List<Cliente> historicoClientes = new ArrayList<>();
     private final HashMap<String, Cliente> map;
     private Cliente cliente;
 
@@ -51,12 +51,16 @@ public class GestorClientesMem implements IGestorClientes {
     @Override
     public void eliminar(String id) {
         Objects.requireNonNull(id, "Id requerido");
-        if (map.remove(id) == null) {
-            throw new IllegalArgumentException("No existe cliente con id=" + id);
-        }
-        this.cliente=null;
+
+        Cliente eliminado = map.remove(id);
+       if (eliminado == null) {
+        throw new IllegalArgumentException("No existe cliente con id=" + id);
     }
-    
+
+    historicoClientes.add(eliminado); 
+    this.cliente = null;
+}
+
     @Override
     public Cliente buscar(String id) { 
         Objects.requireNonNull(id, "Id requerido");
@@ -74,4 +78,10 @@ public class GestorClientesMem implements IGestorClientes {
     public List<Cliente> listar() {
         return new ArrayList<>(map.values());
     }
+ 
+        public List<Cliente> getHistoricoClientes() {
+        return historicoClientes;
+    }
+        
 }
+

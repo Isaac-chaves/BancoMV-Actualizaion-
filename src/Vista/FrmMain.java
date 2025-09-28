@@ -8,13 +8,16 @@ import Modelo.GestorClientesMem;
 import Modelo.IGestorClientes;
 import Modelo.ServicioClientes;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
 
 /**
  *
  * @author jprod
  */
 public class FrmMain extends javax.swing.JFrame {
-    
+    private ServicioClientes servicioClientes;
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmMain.class.getName());
 
     /**
@@ -23,6 +26,7 @@ public class FrmMain extends javax.swing.JFrame {
     public FrmMain() {
         initComponents();
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        
     }
 
     /**
@@ -34,10 +38,21 @@ public class FrmMain extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        jMenu2 = new javax.swing.JMenu();
         dtpMenu = new javax.swing.JDesktopPane();
         menuBar = new javax.swing.JMenuBar();
         menuAdmin = new javax.swing.JMenu();
         menuClientes = new javax.swing.JMenuItem();
+        Historicomenubar = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
+
+        jMenu1.setText("File");
+        jMenuBar1.add(jMenu1);
+
+        jMenu2.setText("Edit");
+        jMenuBar1.add(jMenu2);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -66,6 +81,19 @@ public class FrmMain extends javax.swing.JFrame {
 
         menuBar.add(menuAdmin);
 
+        Historicomenubar.setText("Historial");
+        Historicomenubar.setToolTipText("");
+
+        jMenuItem1.setText("Elimacion");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        Historicomenubar.add(jMenuItem1);
+
+        menuBar.add(Historicomenubar);
+
         setJMenuBar(menuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -83,13 +111,39 @@ public class FrmMain extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void menuClientesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuClientesActionPerformed
-        IGestorClientes gestor = new GestorClientesMem();
-        ServicioClientes servicio=new ServicioClientes(gestor);
-        FrmClientes frm = new FrmClientes(servicio);
-        this.dtpMenu.add(frm);
-        frm.setVisible(true);
+       IGestorClientes gestor = new GestorClientesMem();
+       servicioClientes = new ServicioClientes(gestor);
+       FrmClientes frm = new FrmClientes(servicioClientes);
+       this.dtpMenu.add(frm);
+       frm.setVisible(true);
     }//GEN-LAST:event_menuClientesActionPerformed
 
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        
+         if (servicioClientes == null) {
+        JOptionPane.showMessageDialog(this, "Debe abrir primero el módulo de Clientes.", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    // Evitar abrir múltiples veces el mismo internal frame
+    for (JInternalFrame frame : dtpMenu.getAllFrames()) {
+        if (frame instanceof FrmHistorico) {
+            try {
+                frame.setSelected(true);
+            } catch (java.beans.PropertyVetoException ex) {
+            }
+            return;
+        }
+    }
+
+    FrmHistorico frame = new FrmHistorico(servicioClientes);
+    dtpMenu.add(frame);
+    frame.setVisible(true);
+        
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+    
+   
+            
     /**
      * @param args the command line arguments
      */
@@ -116,7 +170,12 @@ public class FrmMain extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenu Historicomenubar;
     private javax.swing.JDesktopPane dtpMenu;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenu menuAdmin;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem menuClientes;
