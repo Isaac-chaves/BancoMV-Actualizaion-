@@ -47,11 +47,10 @@ public abstract class Cuenta {
         this.estado = estado;
     }
     
-    // Métodos abstractos
     public abstract TipoMoneda getTipoMoneda();
     public abstract String getSimboloMoneda();
     
-    // Operaciones bancarias
+
     public void depositar(double monto) throws CuentaInactivaException {
         validarCuentaActiva();
         validarMontoPositivo(monto);
@@ -59,7 +58,7 @@ public abstract class Cuenta {
     }
     
     public void retirar(double monto) throws SaldoInsuficienteException, CuentaInactivaException {
-        validarCuentaActiva();
+       validarCuentaActiva();
         validarMontoPositivo(monto);
         
         if (saldo < monto) {
@@ -69,7 +68,7 @@ public abstract class Cuenta {
             );
         }
         
-        saldo = saldo - monto;
+   saldo = saldo - monto;
     }
     
     public void transferir(Cuenta cuentaDestino, double monto) 
@@ -79,41 +78,39 @@ public abstract class Cuenta {
             throw new MonedaIncompatibleException("No se pueden transferir fondos entre cuentas de diferentes monedas"
             );
         }
-        this.retirar(monto);
+    this.retirar(monto);
          try {
             cuentaDestino.depositar(monto);
         } catch (Exception e) {
-            // Si falla el depósito, revertir el retiro
-        try {
+   try {
               this.depositar(monto);
             } catch (CuentaInactivaException ex) {
-                // En caso extremo, al menos registrar el error
                 System.out.println("Error crítico: No se pudo revertir transacción");
             }
             throw e;
         }
     }
     
-    // Métodos de validación
-    private void validarNumeroCuenta(String numero) {
-        if (numero == null || !numero.matches("\\d{17}")) {
-            throw new IllegalArgumentException("El número de cuenta debe tener exactamente 17 dígitos");
+
+private void validarNumeroCuenta(String numero) {
+      if (numero == null || !numero.matches("\\d{17}")) {
+           throw new IllegalArgumentException("El número de cuenta debe tener exactamente 17 dígitos");
         }
     }
     
-    private void validarSaldoInicial(double saldo) {
+  private void validarSaldoInicial(double saldo) {
         if (saldo < 0) {
             throw new IllegalArgumentException("El saldo inicial no puede ser negativo");
         }
     }
     
-    private void validarMontoPositivo(double monto) {
+  private void validarMontoPositivo(double monto) {
         if (monto <= 0) {
             throw new IllegalArgumentException("El monto debe ser positivo");
         }
     }
     
-    private void validarCuentaActiva() throws CuentaInactivaException {
+   private void validarCuentaActiva() throws CuentaInactivaException {
         if (estado != Estado.ACTIVA) {
             throw new CuentaInactivaException("La cuenta debe estar activa para realizar operaciones. Estado actual: " + estado);
         }

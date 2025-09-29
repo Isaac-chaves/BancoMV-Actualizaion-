@@ -12,7 +12,8 @@ import java.util.Objects;
  * @author Home
  */
 public class ServicioCuentas {
-   private final IGestorCuentas gestorCuentas;
+
+    private final IGestorCuentas gestorCuentas;
     private final IGestorClientes gestorClientes;
     
     public ServicioCuentas(IGestorCuentas gestorCuentas, IGestorClientes gestorClientes) {
@@ -20,18 +21,46 @@ public class ServicioCuentas {
         this.gestorClientes = Objects.requireNonNull(gestorClientes, "Gestor de clientes requerido");
     }
     
-    public void crearCuentaColones(String idTitular, double saldoInicial) {
+    public void guardar(String idTitular, double saldoInicial, TipoMoneda tipoMoneda) {
+        validarRequeridos(idTitular);
+        Objects.requireNonNull(tipoMoneda, "Tipo de moneda requerido");
         validarTitularExiste(idTitular);
+        validarSaldo(saldoInicial);
+        
         String numeroCuenta = gestorCuentas.generarNumeroCuenta();
-        CuentaColones cuenta = new CuentaColones(numeroCuenta, idTitular, saldoInicial);
+        
+        if (gestorCuentas.existe(numeroCuenta)) {
+            throw new IllegalArgumentException("Ya existe una cuenta con número=" + numeroCuenta);
+        }
+        
+        Cuenta cuenta;
+        if (tipoMoneda == TipoMoneda.COLONES) {
+            cuenta = new CuentaColones(numeroCuenta, idTitular, saldoInicial);
+        } else {
+            cuenta = new CuentaDolares(numeroCuenta, idTitular, saldoInicial);
+        }
+        
         gestorCuentas.guardar(cuenta);
     }
     
+    public void guardar(String idTitular, double saldoInicial) {
+        // Por defecto, crea cuenta en colones
+        guardar(idTitular, saldoInicial, TipoMoneda.COLONES);
+    }
+    
+    public void crearCuentaColones(String idTitular, double saldoInicial) {
+        guardar(idTitular, saldoInicial, TipoMoneda.COLONES);
+    }
+    
     public void crearCuentaDolares(String idTitular, double saldoInicial) {
-        validarTitularExiste(idTitular);
-        String numeroCuenta = gestorCuentas.generarNumeroCuenta();
-        CuentaDolares cuenta = new CuentaDolares(numeroCuenta, idTitular, saldoInicial);
-        gestorCuentas.guardar(cuenta);
+        guardar(idTitular, saldoInicial, TipoMoneda.DOLARES);
+    }
+    
+    public void eliminar(String numeroCuenta) {
+        if (!gestorCuentas.existe(numeroCuenta)) {
+            throw new IllegalArgumentException("No existe ninguna cuenta con número=" + numeroCuenta);
+        }
+        gestorCuentas.eliminar(numeroCuenta);
     }
     
     public void depositar(String numeroCuenta, double monto) 
@@ -59,7 +88,21 @@ public class ServicioCuentas {
         gestorCuentas.actualizar(cuentaDestino);
     }
     
- 
+    public void actualizar(String numeroCuenta, Estado nuevoEstado) {
+        Objects.requireNonNull(ultimoRegistro(), "No se ha cargado ningún registro");
+        validarRequeridos(numeroCuenta);
+        Objects.requireNonNull(nuevoEstado, "Estado requerido");
+        
+        if (!hayCambios(numeroCuenta, nuevoEstado)) return;
+        if (!gestorCuentas.existe(numeroCuenta)) {
+            throw new IllegalArgumentException("No existe cuenta con número=" + numeroCuenta);
+        }
+        
+        Cuenta cuenta = gestorCuentas.buscar(numeroCuenta);
+        cuenta.setEstado(nuevoEstado);
+        gestorCuentas.actualizar(cuenta);
+    }
+    
     public void cambiarEstadoCuenta(String numeroCuenta, Estado nuevoEstado) {
         Cuenta cuenta = buscarCuenta(numeroCuenta);
         Estado estadoAnterior = cuenta.getEstado();
@@ -69,12 +112,19 @@ public class ServicioCuentas {
         System.out.println("Estado de cuenta " + numeroCuenta + " cambiado de " + estadoAnterior + " a " + nuevoEstado);
     }
     
-    
     public Cuenta buscarCuenta(String numeroCuenta) {
+        validarRequeridos(numeroCuenta);
         if (!gestorCuentas.existe(numeroCuenta)) {
             throw new IllegalArgumentException("No existe cuenta con número: " + numeroCuenta);
         }
         return gestorCuentas.buscar(numeroCuenta);
+    }
+    
+    public boolean validarNumeroCuentaDisponible(String numeroCuenta) {
+        if (numeroCuenta == null || numeroCuenta.isBlank()) {
+            throw new IllegalArgumentException("Número de cuenta requerido");
+        }
+        return !gestorCuentas.existe(numeroCuenta);
     }
     
     public List<Cuenta> listarCuentas() {
@@ -96,5 +146,25 @@ public class ServicioCuentas {
         if (!gestorClientes.existe(idTitular)) {
             throw new IllegalArgumentException("No existe cliente con ID: " + idTitular);
         }
-    }  
+    }
+    
+    private void validarSaldo(double saldo) {
+        if (saldo < 0) {
+            throw new IllegalArgumentException("El saldo inicial no puede ser negativo");
+        }
+    }
+    
+    private void validarRequeridos(String... datos) {
+        for (String dato : datos) {
+            if (dato == null || dato.isBlank()) {
+                throw new IllegalArgumentException("Faltan datos requeridos");
+            }
+        }
+    }
+    
+    private boolean hayCambios(String numeroCuenta, Estado nuevoEstado) {
+        Cuenta cuenta = gestorCuentas.buscar(numeroCuenta);
+        Objects.requireNonNull(cuenta, "No se ha cargado ningún registro");
+        return !cuenta.getEstado().equals(nuevoEstado);
+    }
 }
